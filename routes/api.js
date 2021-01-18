@@ -1,9 +1,8 @@
 const router = require('express').Router();
-const workout = require('../main/workout.js');
 const Workout = require('../models/workout.js');
 
 router.post('/api/workouts', (req, res) => {
-  workout.create({})
+  Workout.create({})
   .then((dbWorkout) => {
 res.json(dbWorkout);
   })
@@ -11,23 +10,36 @@ res.json(dbWorkout);
     res.json(err);
   });
 });
+router.put('/api/workouts/:id', ({ body, params }, res) => {
+  Workout.findByIdAndUpdate(
+    params.id,
+    { $push: { exercises: body } },
+    { new: true, runValidators: true }
+  )
+    .then((dbWorkout) => {
+      res.json(dbWorkout);
+    })
+    .catch((err) => {
+      res.json(err);
+    });
+});
 
-router.get('/api/workouts/:id', ({ body, paras }, res) => {
-Workout.findByIdAndUpdate(
-  params.id,
-  { $push: { exercise: body } }
-  { new: true, runValidators: true}
-)
-.then(dbWorkout) => {
-  res.json(dbWorkout);
-})
-.catch((err) => {
-  res.json(err);
-});
-});
+// router.get('/api/workouts/', ({ body, params }, res) => {
+//  Workout.findByIdAndUpdate(
+//   params.id,
+//   { $push: { exercise: body } },
+//   { new: true, runValidators: true}
+// )
+// .then((dbWorkout) => {
+//   res.json(dbWorkout);
+// })
+// .catch((err) => {
+//   res.json(err);
+// });
+// });
 
 router.get('/api/workouts', (req, res) => {
-  workout.aggregate([
+  Workout.aggregate([
     {
       $addFields: {
         totalDuration: {
@@ -41,8 +53,8 @@ router.get('/api/workouts', (req, res) => {
   });
 });
 
-router.get('/api/workouts/rang', (req,res) => {
-workout.aggregate([
+router.get('/api/workouts/range', (req,res) => {
+Workout.aggregate([
   {
     $addFields: {
       totalDuration: {
@@ -53,7 +65,7 @@ workout.aggregate([
 ])
 .sort({ _id: -1 })
 .limit(7)
-.then({dbWorkout} => {
+.then((dbWorkout) => {
   console.log(dbWorkout);
   res.json(dbWorkouts);
 })
@@ -63,7 +75,7 @@ workout.aggregate([
 });
 
 router.delete('/api/workouts', ({ body }, res) => {
-  workout.findByIdAndDelete(body.id)
+  Workout.findByIdAndDelete(body.id)
   .then(() => {
     res.json(true);
   })
